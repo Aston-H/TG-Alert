@@ -29,7 +29,8 @@ mention_timers = {}
 private_timers = {}
 
 
-client = TelegramClient('auto_reply_bot', API_ID, API_HASH)
+# 创建 Telegram 客户端
+client = TelegramClient('tg_monitor_bot', API_ID, API_HASH)
 
 
 # 临时改变音量播放提示音，播放完恢复
