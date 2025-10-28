@@ -83,12 +83,13 @@ async def check_private_timeout(username, sender_id, num_minutes=3):
 
 
 # 监听新消息
+@client.on(events.MessageEdited(incoming=True))
 @client.on(events.NewMessage(incoming=True))
 async def handle_new_message(event):
     chat = await event.get_chat()
-    # logging.info(f"群聊消息: \n{json.dumps(chat.__dict__, default=str, ensure_ascii=False)}")
+    logging.info(f"群聊消息: \n{json.dumps(chat.__dict__, default=str, ensure_ascii=False)}")
     sender = await event.get_sender()
-    # logging.info(f"私聊消息: \n{json.dumps(sender.__dict__, default=str, ensure_ascii=False)}")
+    logging.info(f"私聊消息: \n{json.dumps(sender.__dict__, default=str, ensure_ascii=False)}")
     sender_id = event.sender_id
     sender_username = sender.username if sender.username else "Unknown"
     sender_first_name = sender.first_name if sender.first_name else "Unknown"
