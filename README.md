@@ -14,9 +14,10 @@ Telegram 监控与提醒工具
 pip install -r requirements.txt
 ```
 
-2. 设置环境变量（可选）：
+2. 新增env文件，添加设置环境变量（可选）：
 直接设置变量：
 ```
+# Telegram API 配置
 API_ID=你的API_ID
 API_HASH=你的API_HASH
 PHONE_NUMBER=你的手机号

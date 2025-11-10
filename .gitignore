@@ -205,5 +205,5 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
-tg_monitor_bot.session
-tg_monitor_bot.session-journal
+.session
+.session-journal

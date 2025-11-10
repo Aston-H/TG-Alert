@@ -1,5 +1,5 @@
 import asyncio
-from tg_monitor import main as monitor_main
+from tg_alert_monitor import main as monitor_main
 
 
 
