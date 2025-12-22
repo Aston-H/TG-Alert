@@ -39,7 +39,7 @@ class Config:
     SENSITIVE_WORDS: list = None
 
     def __post_init__(self):
-        self.SENSITIVE_WORDS = ['ZF-DA组', '不定时抽查', '请您配合', '在线状态', '你好', '您好']
+        self.SENSITIVE_WORDS = ['ZF-DA组', '不定时抽查', '请您配合', '在线状态', '你好', '您好', '代码review', '@all']
 
 # 创建全局配置实例
 config = Config()
@@ -63,7 +63,7 @@ logger = LogManager.setup()
 class SoundManager:
     """声音管理类，处理所有声音相关操作"""
     @staticmethod
-    async def play_alert_sound_async(target_volume: int = 70, count: int = 1):
+    async def play_alert_sound_async(target_volume: int = 60, count: int = 1):
         """异步播放提示音"""
         await asyncio.to_thread(SoundManager._play_alert_sound, target_volume, count)
 
