@@ -39,7 +39,7 @@ class Config:
     SENSITIVE_WORDS: list = None
 
     def __post_init__(self):
-        self.SENSITIVE_WORDS = ['ZF-DA组', '不定时抽查', '请您配合', '在线状态', '你好', '您好', '代码review', '@all']
+        self.SENSITIVE_WORDS = ['ZF-DA组', '不定时抽查', '请您配合', '在线状态', '你好', '您好', '代码review']
 
 # 创建全局配置实例
 config = Config()
