@@ -1,14 +1,18 @@
+
 import asyncio
 import os
 import time
 import json
 import logging
+import threading
+import random
 from datetime import datetime
 from typing import Dict, Optional
 from dataclasses import dataclass
 from collections import defaultdict
 from telethon import TelegramClient, events
 from dotenv import load_dotenv
+import pyautogui
 
 
 # 加载环境变量
@@ -19,14 +23,14 @@ load_dotenv()
 class Config:
     """配置类，集中管理所有配置参数"""
     # 告警配置
-    GROUP_MENTION_TIMEOUT: int = 60  # 群聊@消息未回复的超时时间（秒）
+    GROUP_MENTION_TIMEOUT: int = 10  # 群聊@消息未回复的超时时间（秒）
     PRIVATE_MESSAGE_TIMEOUT: int = 60  # 私聊消息未回复的超时时间（秒）
-    MAX_ALERT_COUNT: int = 3  # 单条消息最大告警次数
+    MAX_ALERT_COUNT: int = 5  # 单条消息最大告警次数
     ALERT_SOUND_PATH: str = '/System/Library/Sounds/Hero.aiff'  # 告警提示音文件路径
     CANCEL_WINDOW: int = 60  # 自动取消告警的时间窗口（秒）
 
     # 声音配置
-    ALERT_SOUND_INTERVAL: float = 0.3  # 播放提示音的间隔时间
+    ALERT_SOUND_INTERVAL: float = 0.5  # 播放提示音的间隔时间
     MUSIC_SOUND_INTERVAL: float = 1.0  # 播放音乐的间隔时间
     SENSITIVE_MUSIC_PATH: str = 'music.mp3'  # 敏感词触发时播放的音乐文件
 
@@ -39,10 +43,12 @@ class Config:
     SENSITIVE_WORDS: list = None
 
     def __post_init__(self):
-        self.SENSITIVE_WORDS = ['ZF-DA组', '不定时抽查', '请您配合', '在线状态', '你好', '您好', '代码review']
+        self.SENSITIVE_WORDS = ['ZF-DA组', '不定时抽查', '请您配合', '在线状态', '你好', '您好', '代码review', '代码review']
 
 # 创建全局配置实例
 config = Config()
+
+
 
 # 日志管理类
 class LogManager:
@@ -58,6 +64,82 @@ class LogManager:
         return logging.getLogger(__name__)
 
 logger = LogManager.setup()
+
+# # 防止远程桌面超时的活动模拟器
+# class ActivitySimulator:
+#     """模拟用户活动，防止远程桌面认为进程不活跃而自动结束进程"""
+    
+#     # 禁用pyautogui的安全保护（快速移动到屏幕角落不会触发)
+#     pyautogui.FAILSAFE = False
+    
+#     def __init__(self, interval_minutes: int = 10):
+#         """
+#         初始化活动模拟器
+#         :param interval_minutes: 模拟活动的间隔时间（分钟），默认10分钟
+#         """
+#         self.interval_seconds = interval_minutes * 60
+#         self.running = False
+#         self.thread = None
+    
+#     def start(self):
+#         """启动活动模拟线程"""
+#         if not self.running:
+#             self.running = True
+#             self.thread = threading.Thread(target=self._simulate_activity_loop, daemon=True)
+#             self.thread.start()
+#             logger.info(f"✅ 启动防超时活动模拟器（间隔：{self.interval_seconds}秒）")
+    
+#     def stop(self):
+#         """停止活动模拟线程"""
+#         self.running = False
+#         if self.thread:
+#             self.thread.join(timeout=5)
+#             logger.info("🛑 停止防超时活动模拟器")
+    
+#     def _simulate_activity_loop(self):
+#         """持续模拟用户活动的循环"""
+#         while self.running:
+#             try:
+#                 time.sleep(self.interval_seconds)
+#                 if self.running:
+#                     self._perform_user_activity()
+#             except Exception as e:
+#                 logger.debug(f"模拟用户活动时发生错误: {e}")
+    
+#     def _perform_user_activity(self):
+#         """执行用户活动模拟"""
+#         try:
+#             # 获取当前鼠标位置
+#             current_x, current_y = pyautogui.position()
+            
+#             # 随机生成一个偏移量
+#             offset_x = random.randint(-50, 50)
+#             offset_y = random.randint(-50, 50)
+            
+#             # 计算新的鼠标位置（确保在屏幕范围内）
+#             screen_width, screen_height = pyautogui.size()
+#             new_x = max(0, min(current_x + offset_x, screen_width - 1))
+#             new_y = max(0, min(current_y + offset_y, screen_height - 1))
+            
+#             # 模拟鼠标移动（速度较快但不会引起问题）
+#             pyautogui.moveTo(new_x, new_y, duration=0.5)
+            
+#             # 模拟鼠标点击
+#             pyautogui.click()
+            
+#             # 模拟鼠标滑动（上下各滑动一次）
+#             pyautogui.scroll(3)
+#             time.sleep(0.2)
+#             pyautogui.scroll(-3)
+            
+#             logger.debug(f"🖱️ 执行了模拟用户活动（鼠标位置：({new_x}, {new_y})）")
+#         except Exception as e:
+#             logger.debug(f"执行用户活动模拟失败: {e}")
+
+# # 全局活动模拟器实例
+# activity_simulator = ActivitySimulator(interval_minutes=10)
+
+
 
 # 声音管理类
 class SoundManager:
@@ -123,7 +205,7 @@ class TelegramAlertSystem:
     
     def __init__(self, api_id: int, api_hash: str, phone: str):
         """初始化告警系统"""
-        self.client = TelegramClient('tg_monitor_bot', api_id, api_hash)
+        self.client = TelegramClient('tg_monitor_bot', api_id, api_hash, device_model='iPhone X', system_version='iOS 16.7.11', app_version='')                                     
         self.my_id = None
         self.my_username = None
         self.pending_alerts: Dict[int, AlertRecord] = {}
@@ -379,6 +461,9 @@ class TelegramAlertSystem:
 
 async def main():
     """主函数"""
+    # 启动防超时活动模拟器
+    # activity_simulator.start()
+    
     client = TelegramAlertSystem(
         os.getenv("API_ID"),
         os.getenv("API_HASH"),
@@ -392,6 +477,7 @@ async def main():
     except asyncio.CancelledError:
         logger.info("👋 按了 Ctrl+C 停止程序")
     finally:
+        # activity_simulator.stop()  # 停止活动模拟器
         await client.client.disconnect()
         logger.info("🔌 客户端断开连接")
 
